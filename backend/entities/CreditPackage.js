@@ -2,7 +2,7 @@ const { EntitySchema } = require('typeorm')
 
 module.exports = new EntitySchema({
     name: 'CreditPackage',
-    tableName: 'CREDIT_PACKAGE',
+    tableName: 'CREDIT_PACKAGES',
     columns: {
         id: {
             primary: true,

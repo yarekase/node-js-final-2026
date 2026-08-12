@@ -1,21 +1,24 @@
 require('dotenv').config()
 const { DataSource } = require('typeorm')
+const { get } = require('../config/index')
+
 const CreditPackage = require('../entities/CreditPackage')
 const Skill = require('../entities/Skill')
 
 const dataSource = new DataSource({
     type: 'postgres',
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    synchronize: process.env.DB_SYNCHRONIZE === 'true',
-    ssl: process.env.DB_ENABLE_SSL === 'true',
+    host: get('db.host'),
+    port: Number(get('db.port')),
+    username: get('db.username'),
+    password: get('db.password'),
+    database: get('db.database'),
+    synchronize: get('db.synchronize'),
+    ssl: get('db.ssl'),
     entities: [
         CreditPackage,
         Skill
     ],
+    migrations: ['db/migrations/*.js'],
 })
 
 module.exports = { dataSource }

@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./bin/www.js",
-    "start": "node ./bin/www.js"
+    "start": "node ./bin/www.js",
+    "seed": "node db/seed.js",
+    "migration:generate": "typeorm migration:generate -d ./db/data-source.js -o",
+    "migration:run": "typeorm migration:run -d ./db/data-source.js",
+    "migration:revert": "typeorm migration:revert -d ./db/data-source.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +21,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.2",
     "typeorm": "^1.1.0"
   },
   "devDependencies": {
