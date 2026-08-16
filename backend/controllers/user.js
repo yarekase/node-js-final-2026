@@ -25,8 +25,8 @@ const userController = {
             next(appError(409, "資料重複"));
             return;
         }
-        const skill = await skillRepo.save({ name: name.trim() });
-        res.json({ status: "success", data: skill });
+        const user = await userRepo.save({ name: name.trim(), email: email.trim(), password: password });
+        res.json({ status: "success", data: user });
     },
 
     async deleteSkill(req, res, next) {
