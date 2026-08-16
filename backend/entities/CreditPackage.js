@@ -17,11 +17,11 @@ module.exports = new EntitySchema({
             unique: true,
         },
         credit_amount: {
-            type: 'integer',
+            type: 'int',
             nullable: false,
         },
         price: {
-            type: 'integer',
+            type: 'int',
             nullable: false,
         },
         createdAt: {

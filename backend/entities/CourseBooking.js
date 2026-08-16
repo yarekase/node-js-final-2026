@@ -13,7 +13,6 @@ module.exports = new EntitySchema({
         user_id: {
             type: 'uuid',
             nullable: false,
-            unique: true,
         },
         course_id: {
             type: 'uuid',
@@ -26,7 +25,7 @@ module.exports = new EntitySchema({
             nullable: false,
         },
         credit_used: {
-            type: 'integer',
+            type: 'int',
             nullable: false,
         },
         cancelledAt: {

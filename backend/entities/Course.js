@@ -10,10 +10,9 @@ module.exports = new EntitySchema({
             generated: "uuid",
             nullable: false,
         },
-        user_id: {
+        coach_id: {
             type: "uuid",
             nullable: false,
-            unique: true
         },
         skill_id: {
             type: "uuid",
@@ -21,6 +20,7 @@ module.exports = new EntitySchema({
         },
         name: {
             type: "varchar",
+            unique: true,
             length: 50,
             nullable: false
         },
@@ -40,10 +40,10 @@ module.exports = new EntitySchema({
         },
     },
     relations: {
-        user: {
+        coach: {
             type: "one-to-one",
-            target: "User",
-            joinColumn: { name: "user_id" },
+            target: "Coach",
+            joinColumn: { name: "coach_id" },
         },
         skill: {
             type: "one-to-one",

@@ -13,18 +13,17 @@ module.exports = new EntitySchema({
         user_id: {
             type: "uuid",
             nullable: false,
-            unique: true
         },
         credit_package_id: {
             type: "uuid",
             nullable: false
         },
         purchase_credits: {
-            type: "integer",
+            type: "int",
             nullable: false
         },
         price_paid: {
-            type: "integer",
+            type: "int",
             nullable: false,
         },
         createdAt: {
