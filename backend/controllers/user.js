@@ -4,6 +4,7 @@ const appError = require("../utils/appError");
 const { isValidString, isValidPassword, isInteger } = require("../utils/validUtils");
 
 const userController = {
+    // 取得所有會員資訊
     async getUsers(req, res, next) {
         const users = await dataSource.getRepository("User").find({
             select: { id: true, name: true, email: true, role: true, credit_balance: true },
@@ -13,6 +14,23 @@ const userController = {
         return;
     },
 
+    // 登入會員
+    async getUser(req, res, next) {
+        const { email, password } = req.body;
+        if (!isValidString(email) || !isValidPassword(password)) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+        const userRepo = dataSource.getRepository("User");
+        const user = await userRepo.findOneBy({ email: email.trim() });
+        if (!user) {
+            next(appError(404, "查無此會員"));
+            return;
+        }
+        res.json({ status: "success", data: user });
+    },
+
+    // 註冊新會員
     async postUser(req, res, next) {
         const { name, email, password } = req.body;
         if (!isValidString(name) || !isValidString(email) || !isValidPassword(password)) {
