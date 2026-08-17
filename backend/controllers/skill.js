@@ -36,7 +36,7 @@ const skillController = {
             next(appError(400, "ID錯誤"));
             return;
         }
-        res.json({ status: "success" });
+        res.json({ status: "success", data: result });
 
     },
 };
