@@ -1,6 +1,6 @@
-const appError = (status, message) => {
+const appError = (statusCode, message) => {
     const error = new Error(message);
-    error.status = status;
+    error.statusCode = statusCode;
     return error;
 };
 module.exports = appError;

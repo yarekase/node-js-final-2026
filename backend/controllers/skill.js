@@ -7,7 +7,7 @@ const skillController = {
     async getSkills(req, res, next) {
         const skills = await dataSource.getRepository("Skill").find({
             select: { id: true, name: true },
-            order: { created_at: "ASC" },
+            order: { createdAt: "ASC" },
         });
         res.json({ status: "success", data: skills });
         return;
