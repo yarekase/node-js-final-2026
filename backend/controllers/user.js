@@ -1,7 +1,11 @@
-// controllers/skill.js
 const { dataSource } = require("../db/data-source");
 const appError = require("../utils/appError");
 const { isValidString, isValidPassword, isInteger } = require("../utils/validUtils");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const config = require('../config/index')
+
+const pw_err = '密碼不符合規則，需包含英文大小寫及數字，字數在8~16字之間'
 
 const userController = {
     // 取得所有會員資訊
@@ -14,48 +18,48 @@ const userController = {
         return;
     },
 
-    // 登入會員
-    async getUser(req, res, next) {
-        const { email, password } = req.body;
-        if (!isValidString(email) || !isValidPassword(password)) {
-            next(appError(400, "欄位未填寫正確"));
-            return;
-        }
-        const userRepo = dataSource.getRepository("User");
-        const user = await userRepo.findOneBy({ email: email.trim() });
-        if (!user) {
-            next(appError(404, "查無此會員"));
-            return;
-        }
-        res.json({ status: "success", data: user });
-    },
-
     // 註冊新會員
-    async postUser(req, res, next) {
+    async signup(req, res, next) {
         const { name, email, password } = req.body;
-        if (!isValidString(name) || !isValidString(email) || !isValidPassword(password)) {
-            next(appError(400, "欄位未填寫正確"));
+        // 檢查姓名、Email和密碼格式
+        if (!isValidString(name) || !isValidString(email) || !isValidString(password)) {
+            next(appError(400, '欄未為正確填寫'));
             return;
         }
+        // 檢查密碼是否符合規則
+        if (!isValidPassword(password)) {
+            next(appError(400, pw_err));
+            return;
+        }
+        // 讀取資料庫看是否有重複註冊
         const userRepo = dataSource.getRepository("User");
-        const existing = await userRepo.findOneBy({ email: email.trim() });
-        if (existing) {
-            next(appError(409, "資料重複"));
+        //檢查email有無重複
+        const existingUser = await userRepo.findOneBy({ email: email.trim().toLowerCase() });
+        if (existingUser) {
+            next(appError(409, "Email已被使用"));
             return;
         }
-        const user = await userRepo.save({ name: name.trim(), email: email.trim(), password: password });
-        res.json({ status: "success", data: user });
+        //對密碼加密
+        const hashPassword = await bcrypt.hash(password, 10);
+        //寫入資料庫
+        const user = await userRepo.save({
+            name: name.trim(),
+            email: email.trim(),
+            password: hashPassword
+        });
+        res.status(201).json({
+            status: "success",
+            data: {
+                user: {
+                    id: user.id,
+                    name: user.name
+                }
+            }
+        });
     },
 
-    async deleteSkill(req, res, next) {
-        const { skillId } = req.params;
-        const result = await dataSource.getRepository("Skill").delete(skillId);
-        if (result.affected === 0) {
-            next(appError(400, "ID錯誤"));
-            return;
-        }
-        res.json({ status: "success" });
 
-    },
+
+
 };
-module.exports = skillController;
+module.exports = userController;

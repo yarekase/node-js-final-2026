@@ -20,7 +20,7 @@ app.get('/healthcheck', async (req, res) => {
 
 // 之後每完成一個里程碑，路由就多掛一條：
 // app.use('/api/credit-package', require('./routes/creditPackage'))
-
+app.use('/api/coaches/skill', require('./routes/skill'))
 
 
 // 404
