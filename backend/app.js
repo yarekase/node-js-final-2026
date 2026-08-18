@@ -23,6 +23,7 @@ app.get('/healthcheck', async (req, res) => {
 app.use('/api/coaches/skill', require('./routes/skill'))
 app.use('/api/credit-package', require('./routes/CreditPackage'))
 app.use('/api/users', require('./routes/User'))
+app.use('/api/admin/coaches', require('./routes/coach'))
 
 
 // 404

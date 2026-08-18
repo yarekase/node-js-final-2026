@@ -44,7 +44,34 @@ const coachController = {
             return;
         }
 
+        const newCoach = coachRepo.create({
+            user_id: userId,
+            experience_years,
+            description,
+            profile_image_url: profile_image_url || '',
+        });
 
+        await coachRepo.save(newCoach);
+
+        res.status(201).json({
+            status: "success",
+            data: {
+                user: {
+                    name: user.name,
+                    role: 'COACH'
+                },
+                coach: {
+                    id: newCoach.id,
+                    user_id: userId,
+                    experience_years,
+                    description,
+                    profile_image_url: profile_image_url || '',
+                    created_at: newCoach.createdAt,
+                    updated_at: newCoach.updatedAt,
+                }
+            }
+        });
+        return;
 
 
     },
