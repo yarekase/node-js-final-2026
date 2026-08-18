@@ -10,42 +10,16 @@ const pw_err = '密碼不符合規則，需包含英文大小寫及數字，字�
 const userController = {
     // 取得登入會員資訊`
     async getUserProfile(req, res, next) {
-        // 檢查是否有標頭以及格式是否正確
-        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
-            next(appError(401, '請先登入'));
-            return;
-        }
-        const token = req.headers.authorization.split(' ')[1];
-
-        try {
-            const decoded = jwt.verify(token, get('secret.jwtSecret'));
-            const userRepo = dataSource.getRepository("User");
-            const user = await userRepo.findOneBy({ id: decoded.id });
-
-            if (!user) {
-                next(appError(401, '無效的 token'));
-                return;
-            }
-
-            res.status(200).json({
-                status: 'success',
-                data: {
-                    user: {
-                        name: user.name,
-                        email: user.email
-                    }
+        res.json({
+            status: 'success',
+            data: {
+                user: {
+                    name: req.user.name,
+                    email: req.user.email
                 }
-            });
-
-        } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                next(appError(401, 'Token 已過期'))
-                return;
             }
-            next(appError(401, '無效的 token'))
-            return;
-        }
-
+        });
+        return;
     },
 
     // 註冊新會員
@@ -136,6 +110,44 @@ const userController = {
         return;
 
     },
+    // 更新暱稱
+    async changeName(req, res, next) {
+        const newName = req.body.name;
+        //檢查欄位
+        if (!isValidString(newName)) {
+            next(appError(400, '欄位未正確填寫'));
+            return;
+        }
+        // 檢查暱稱是否與原本相同
+        if (newName == req.user.name) {
+            next(appError(400, '使用者名稱未變更'));
+            return;
+        }
+
+        //讀取資料庫
+        const userRepo = dataSource.getRepository("User");
+        //更新資料
+        const result = await userRepo.update(
+            { id: req.user.id },
+            { name: newName });
+        if (result.affected === 0) {
+            next(appError(400, '更新使用者資料失敗'));
+            return;
+        }
+
+        res.status(200).json({
+            status: "success",
+            data: {
+                user: {
+                    name: newName
+                }
+            }
+        });
+        return;
+
+
+
+    }
 
 
 
