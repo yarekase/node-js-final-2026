@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const CreditPackageController = require('../controllers/CreditPackage');
+const creditPackageController = require('../controllers/creditPackage');
 
-router.get('/', CreditPackageController.getPackages);
-router.post('/', CreditPackageController.postPackage);
-router.delete('/:packageId', CreditPackageController.deletePackage);
+router.get('/', creditPackageController.getPackages);
+router.post('/', creditPackageController.postPackage);
+router.delete('/:packageId', creditPackageController.deletePackage);
 
 module.exports = router;
