@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const skillController = require('../controllers/skill');
+const skillController = require('../controllers/Skill');
 
 router.get('/', skillController.getSkills);
 router.post('/', skillController.postSkill);

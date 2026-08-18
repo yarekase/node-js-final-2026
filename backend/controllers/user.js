@@ -31,7 +31,7 @@ const userController = {
             next(appError(400, pw_err));
             return;
         }
-        // 讀取資料庫看是否有重複註冊
+        // 讀取資料庫
         const userRepo = dataSource.getRepository("User");
         //檢查email有無重複
         const existingUser = await userRepo.findOneBy({ email: email.trim().toLowerCase() });
