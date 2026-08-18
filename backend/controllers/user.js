@@ -144,9 +144,59 @@ const userController = {
             }
         });
         return;
+    },
 
+    // 變更密碼
+    async changePassword(req, res, next) {
+        const { password, new_password, confirm_new_password } = req.body;
+        // 檢查欄位
+        if (!isValidString(password) || !isValidString(new_password) || !isValidString(confirm_new_password)) {
+            next(appError(400, '欄位未正確填寫'));
+            return;
+        }
+        // 檢查是否再次輸入正確
+        if (new_password !== confirm_new_password) {
+            next(appError(400, '新密碼與驗證新密碼不一致'));
+            return;
+        }
+        // 檢查密碼是否符合規則
+        if (!isValidPassword(password) || !isValidPassword(new_password) || !isValidPassword(confirm_new_password)) {
+            next(appError(400, pw_err));
+            return;
+        }
+        // 檢查新密碼是否與舊密碼相同
+        if (password === new_password) {
+            next(appError(400, '新密碼不能與舊密碼相同'));
+            return;
+        }
 
+        // 檢查舊密碼是否正確
+        const isMatch = await bcrypt.compare(password, req.user.password);
+        if (!isMatch) {
+            next(appError(400, '密碼輸入錯誤'));
+            return;
+        }
+        const hashPassword = await bcrypt.hash(new_password, 10);
+        // 讀取資料庫
+        const userRepo = dataSource.getRepository("User");
+        // 更新資料
+        const result = await userRepo.update(
+            { id: req.user.id },
+            { password: hashPassword });
+        if (result.affected === 0) {
+            next(appError(400, '更新密碼失敗'));
+            return;
+        }
 
+        res.status(200).json({
+            status: "success",
+            data: {
+                user: {
+                    name: req.user.name
+                }
+            }
+        });
+        return;
     }
 
 
