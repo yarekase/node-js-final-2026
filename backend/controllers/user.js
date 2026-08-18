@@ -3,19 +3,49 @@ const appError = require("../utils/appError");
 const { isValidString, isValidPassword, isInteger } = require("../utils/validUtils");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const config = require('../config/index')
+const { get } = require('../config/index')
 
 const pw_err = '密碼不符合規則，需包含英文大小寫及數字，字數在8~16字之間'
 
 const userController = {
-    // 取得所有會員資訊
-    async getUsers(req, res, next) {
-        const users = await dataSource.getRepository("User").find({
-            select: { id: true, name: true, email: true, role: true, credit_balance: true },
-            order: { created_at: "ASC" },
-        });
-        res.json({ status: "success", data: users });
-        return;
+    // 取得登入會員資訊`
+    async getUserProfile(req, res, next) {
+        // 檢查是否有標頭以及格式是否正確
+        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+            next(appError(401, '請先登入'));
+            return;
+        }
+        const token = req.headers.authorization.split(' ')[1];
+
+        try {
+            const decoded = jwt.verify(token, get('secret.jwtSecret'));
+            const userRepo = dataSource.getRepository("User");
+            const user = await userRepo.findOneBy({ id: decoded.id });
+
+            if (!user) {
+                next(appError(401, '無效的 token'));
+                return;
+            }
+
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    user: {
+                        name: user.name,
+                        email: user.email
+                    }
+                }
+            });
+
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                next(appError(401, 'Token 已過期'))
+                return;
+            }
+            next(appError(401, '無效的 token'))
+            return;
+        }
+
     },
 
     // 註冊新會員
@@ -23,7 +53,7 @@ const userController = {
         const { name, email, password } = req.body;
         // 檢查姓名、Email和密碼格式
         if (!isValidString(name) || !isValidString(email) || !isValidString(password)) {
-            next(appError(400, '欄未為正確填寫'));
+            next(appError(400, '欄位未正確填寫'));
             return;
         }
         // 檢查密碼是否符合規則
@@ -54,10 +84,58 @@ const userController = {
                     id: user.id,
                     name: user.name
                 }
-            }
+            },
         });
     },
+    // 登入會員
+    async login(req, res, next) {
+        const { email, password } = req.body;
+        // 檢查欄位與密碼規則
+        if (!isValidString(email) || !isValidString(password)) {
+            next(appError(400, '欄位未正確填寫'));
+            return;
+        }
+        if (!isValidPassword(password)) {
+            next(appError(400, pw_err));
+            return;
+        }
 
+        const userRepo = dataSource.getRepository("User");
+        const user = await userRepo.findOneBy({ email: email.trim().toLowerCase() });
+
+        if (!user) {
+            next(appError(400, '使用者不存在或密碼輸入錯誤'));
+            return;
+        }
+
+        // 比對密碼是否正確
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            next(appError(400, '使用者不存在或密碼輸入錯誤'));
+            return;
+        }
+
+        const token = jwt.sign(
+            {
+                id: user.id,
+                role: user.role,
+            },
+            get('secret.jwtSecret'),
+            {
+                expiresIn: get('secret.jwtExpiresDay'),
+            });
+        res.status(201).json({
+            status: "success",
+            data: {
+                token,
+                user: {
+                    name: user.name
+                }
+            }
+        });
+        return;
+
+    },
 
 
 
