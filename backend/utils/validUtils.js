@@ -5,4 +5,6 @@ const isValidInteger = (value) =>
 const isValidPassword = (value) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,16}$/.test(value);
 
+
+
 module.exports = { isValidString, isValidInteger, isValidPassword };

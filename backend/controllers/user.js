@@ -15,7 +15,7 @@ const userController = {
             data: {
                 user: {
                     name: req.user.name,
-                    email: req.user.email
+                    email: req.user.email,
                 }
             }
         });
