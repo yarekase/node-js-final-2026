@@ -30,6 +30,7 @@ const skillController = {
     },
 
     async deleteSkill(req, res, next) {
+        console.log('進入deleteSkill')
         const { skillId } = req.params;
         const result = await dataSource.getRepository("Skill").delete(skillId);
         if (result.affected === 0) {

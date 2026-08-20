@@ -18,11 +18,16 @@ app.get('/healthcheck', async (req, res) => {
     }
 })
 
+app.use((req, res, next) => {
+    console.log('🌐 收到請求:', req.method, req.url);
+    next();
+});
+
 // 之後每完成一個里程碑，路由就多掛一條：
 // app.use('/api/credit-package', require('./routes/creditPackage'))
 app.use('/api/coaches/skill', require('./routes/skill'))
-app.use('/api/credit-package', require('./routes/CreditPackage'))
-app.use('/api/users', require('./routes/User'))
+app.use('/api/credit-package', require('./routes/creditPackage'))
+app.use('/api/users', require('./routes/user'))
 app.use('/api/admin/coaches', require('./routes/coach'))
 
 
@@ -37,6 +42,7 @@ app.use((req, res, next) => {
 
 // 錯誤處理守門員
 app.use((err, req, res, next) => {
+    console.log('💥 攔截到錯誤來源：', err.stack);
     const statusCode = err.statusCode || 500
     res.status(statusCode).json({
         status: statusCode === 500 ? 'error' : 'failed',

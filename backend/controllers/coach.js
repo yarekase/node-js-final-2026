@@ -93,7 +93,6 @@ const coachController = {
                 skill_ids
             }
         });
-        return;
     },
 
     // 更新教練後台資料
@@ -106,7 +105,7 @@ const coachController = {
             return;
         }
 
-        if (!profile_image_url || !isValidString(profile_image_url) || !profile_image_url.startsWith('https://')) {
+        if (!isValidString(profile_image_url) || !profile_image_url.startsWith('https://')) {
             next(appError(400, "欄位未填寫正確"));
             return;
         }
@@ -157,8 +156,6 @@ const coachController = {
                 skill_ids
             }
         });
-        return;
-
     },
 
     // 取得教練本人開設的全部課程
@@ -171,8 +168,83 @@ const coachController = {
             status: 'success',
             data: courses
         });
-        return;
+
     },
+
+    // 教練新增課程
+    async addCourse(req, res, next) {
+        console.log('進入addCourse');
+        // 讀取body資料
+        const {
+            skill_id,
+            name,
+            description,
+            start_at,
+            end_at,
+            max_participants,
+            meeting_url
+        } = req.body
+
+        // 驗證欄位格式
+        if (!isValidString(skill_id) ||
+            !isValidString(name) ||
+            !isValidString(description) ||
+            !isValidString(start_at) ||
+            !isValidString(end_at) ||
+            !isValidInteger(max_participants) ||
+            !isValidString(meeting_url) ||
+            !meeting_url.startsWith('https://')
+        ) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+
+        // 驗證skill_id在資料庫裡存在
+        const skillRepo = dataSource.getRepository("Skill");
+        const skill = await skillRepo.findOneBy({ id: skill_id });
+
+        if (!skill) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+
+        const coachRepo = dataSource.getRepository('Coach');
+        const coach = await coachRepo.findOneBy({ user_id: req.user.id });
+
+        const courseRepo = dataSource.getRepository('Course');
+        const addedCourse = courseRepo.create({
+            coach_id: coach.id,
+            skill_id,
+            name,
+            description,
+            startAt: start_at,
+            endAt: end_at,
+            max_participants,
+            meeting_url
+        })
+        await courseRepo.save(addedCourse);
+
+        res.status(201).json({
+            status: 'success',
+            data: {
+                course: {
+                    id: addedCourse.id,
+                    user_id: coach.user_id,
+                    skill_id: addedCourse.skill_id,
+                    name: addedCourse.name,
+                    description: addedCourse.description,
+                    start_at: addedCourse.start_at,
+                    end_at: addedCourse.end_at,
+                    max_participants: addedCourse.max_participants,
+                    meeting_url: addedCourse.meeting_url,
+                    created_at: addedCourse.created_at,
+                    updated_at: addedCourse.updated_at
+                }
+            }
+        });
+    },
+
+
 
 };
 module.exports = coachController;

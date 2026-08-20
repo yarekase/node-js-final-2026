@@ -4,6 +4,7 @@ const config = require("../config/index");
 const appError = require("../utils/appError");
 
 async function isAuth(req, res, next) {
+    console.log('進入isAuth');
     try {
         // 1. 從 header 取 token
         const authHeader = req.headers.authorization;
