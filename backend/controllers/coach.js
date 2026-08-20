@@ -1,7 +1,7 @@
 const { dataSource } = require("../db/data-source");
 const appError = require("../utils/appError");
 const { isValidString, isValidInteger } = require("../utils/validUtils");
-const { In } = require("typeorm");
+const { In, IsNull } = require("typeorm");
 
 const coachController = {
     async roleConvert(req, res, next) {
@@ -160,13 +160,45 @@ const coachController = {
 
     // 取得教練本人開設的全部課程
     async getCoachCourses(req, res, next) {
-        const coachRepo = dataSource.getRepository('Coach');
+        console.log('進入getCoachCourses');
         const courseRepo = dataSource.getRepository('Course');
-        const coach = await coachRepo.findOneBy({ user_id: req.user.id });
-        const courses = await courseRepo.findBy({ coach_id: coach.id });
+        const courses = await courseRepo.find({
+            where: {
+                coach: {
+                    user_id: req.user.id
+                }
+            }
+        });
+        const courseBookingRepo = dataSource.getRepository('CourseBooking');
+
+        const now = new Date().getDate();
+        const courseWithDetails = await Promise.all(
+            courses.map(async course => {
+                const startAt = course.startAt.getTime();
+                const endAt = course.endAt.getTime();
+                let status = '尚未開始';
+
+                if (now > endAt) {
+                    status = '已結束';
+                } else if (now >= startAt && now <= endAt) {
+                    status = '進行中';
+                }
+
+                const participants = await courseBookingRepo.countBy({
+                    course_id: course.id,
+                    cancelledAt: IsNull()
+                });
+
+                return {
+                    ...course,
+                    status,
+                    participants
+                };
+            }));
+
         res.json({
             status: 'success',
-            data: courses
+            data: courseWithDetails
         });
 
     },
@@ -258,17 +290,17 @@ const coachController = {
         // 查token裡的id得到的教練資訊
         const coach = await coachRepo.findOneBy({ user_id: req.user.id });
         // 查course_id跟 coach_id 相同的課程
-        const course = await courseRepo.findOneBy({ id: course_id, coach_id: coach.id });
-
+        const course = await courseRepo.findOne({
+            where: { id: course_id, coach_id: coach.id },
+            relations: {
+                skill: true
+            }
+        });
 
         if (!course) {
             next(appError(400, '課程不存在'));
             return;
         }
-
-        const skillRepo = dataSource.getRepository('Skill');
-        const skill = await skillRepo.findOneBy({ id: course.skill_id });
-
 
         res.status(200).json({
             status: 'success',
@@ -279,8 +311,8 @@ const coachController = {
                 startAt: course.start_at,
                 endAt: course.end_at,
                 max_participants: course.max_participants,
-                skill_name: skill.name,
-                skill_id: skill.id,
+                skill_name: course.skill.name,
+                skill_id: course.skill.id,
                 meeting_url: course.meeting_url
 
             }
