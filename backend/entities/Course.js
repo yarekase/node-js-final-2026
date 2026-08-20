@@ -24,6 +24,10 @@ module.exports = new EntitySchema({
             length: 50,
             nullable: false
         },
+        description: {
+            type: "text",
+            nullable: true
+        },
         startAt: {
             name: 'start_at',
             type: "timestamp",
@@ -42,6 +46,16 @@ module.exports = new EntitySchema({
             type: "varchar",
             length: 2048,
             nullable: true
+        },
+        createdAt: {
+            name: 'create_at',
+            type: "timestamp",
+            createDate: true
+        },
+        updatedAt: {
+            name: 'update_at',
+            type: "timestamp",
+            updateDate: true
         },
     },
     relations: {

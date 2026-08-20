@@ -244,6 +244,138 @@ const coachController = {
         });
     },
 
+    // 取得教練自己開的單一課程資訊
+    async getCoachCourse(req, res, next) {
+        const { course_id } = req.params;
+
+        if (!isValidString(course_id)) {
+            next(appError(400, "課程不存在"));
+            return;
+        }
+
+        const courseRepo = dataSource.getRepository('Course');
+        const coachRepo = dataSource.getRepository('Coach');
+        // 查token裡的id得到的教練資訊
+        const coach = await coachRepo.findOneBy({ user_id: req.user.id });
+        // 查course_id跟 coach_id 相同的課程
+        const course = await courseRepo.findOneBy({ id: course_id, coach_id: coach.id });
+
+
+        if (!course) {
+            next(appError(400, '課程不存在'));
+            return;
+        }
+
+        const skillRepo = dataSource.getRepository('Skill');
+        const skill = await skillRepo.findOneBy({ id: course.skill_id });
+
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                id: course.id,
+                name: course.name,
+                description: course.description,
+                startAt: course.start_at,
+                endAt: course.end_at,
+                max_participants: course.max_participants,
+                skill_name: skill.name,
+                skill_id: skill.id,
+                meeting_url: course.meeting_url
+
+            }
+        });
+    },
+
+    // 更新單一課程
+    async updateCoachCourse(req, res, next) {
+        const { course_id } = req.params;
+
+        if (!isValidString(course_id)) {
+            next(appError(400, "課程不存在"));
+            return;
+        }
+
+        const courseRepo = dataSource.getRepository('Course');
+        const coachRepo = dataSource.getRepository('Coach');
+        // 查token裡的id得到的教練資訊
+        const coach = await coachRepo.findOneBy({ user_id: req.user.id });
+        // 查course_id跟 coach_id 相同的課程
+        const course = await courseRepo.findOneBy({ id: course_id, coach_id: coach.id });
+
+        if (!course) {
+            next(appError(400, '課程不存在'));
+            return;
+        }
+
+        const {
+            skill_id,
+            name,
+            description,
+            start_at,
+            end_at,
+            max_participants,
+            meeting_url
+        } = req.body;
+
+        // 驗證欄位格式
+        if (!isValidString(skill_id) ||
+            !isValidString(name) ||
+            !isValidString(description) ||
+            !isValidString(start_at) ||
+            !isValidString(end_at) ||
+            !isValidInteger(max_participants) ||
+            !isValidString(meeting_url) ||
+            !meeting_url.startsWith('https://')
+        ) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+
+        // 驗證skill_id在資料庫裡存在
+        const skillRepo = dataSource.getRepository("Skill");
+        const skill = await skillRepo.findOneBy({ id: skill_id });
+
+        if (!skill) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+
+        const updatedCourse = await courseRepo.update(
+            { id: course_id },
+            {
+                skill_id,
+                name,
+                description,
+                startAt: start_at,
+                endAt: end_at,
+                max_participants,
+                meeting_url
+            }
+        );
+
+        if (updatedCourse.affected === 0) {
+            next(appError(400, '欄位未填寫正確'));
+            return;
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                id: course_id,
+                user_id: req.user.id,
+                skill_id,
+                name,
+                description,
+                start_at,
+                end_at,
+                max_participants,
+                meeting_url,
+                createdAt: course.createdAt,
+                updatedAt: course.updatedAt
+            }
+        });
+    }
 
 
 };
