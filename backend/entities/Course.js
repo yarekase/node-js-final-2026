@@ -60,12 +60,12 @@ module.exports = new EntitySchema({
     },
     relations: {
         coach: {
-            type: "one-to-one",
+            type: "many-to-one",
             target: "Coach",
             joinColumn: { name: "coach_id" },
         },
         skill: {
-            type: "one-to-one",
+            type: "many-to-one",
             target: "Skill",
             joinColumn: { name: "skill_id" },
         }

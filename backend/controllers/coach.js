@@ -448,9 +448,7 @@ const coachController = {
 
         res.status(200).json({
             status: 'success',
-            data: {
-                coaches
-            }
+            data: coaches
         });
     }
 
