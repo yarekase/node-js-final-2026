@@ -39,5 +39,34 @@ const creditPackageController = {
         res.json({ status: "success", data: result });
 
     },
+
+    // 購買方案
+    async buyPackage(req, res, next) {
+        const { id } = req.user;
+        const { creditPackageId } = req.params;
+        if (!isValidString(creditPackageId)) {
+            next(appError(400, "欄位未填寫正確"));
+            return;
+        }
+        const creditPackageRepo = dataSource.getRepository("CreditPackage");
+        const creditPackage = await creditPackageRepo.findOneBy({ id: creditPackageId });
+        if (!creditPackage) {
+            next(appError(400, "ID錯誤"));
+            return;
+        }
+
+        const creditPurchaseRepo = dataSource.getRepository("CreditPurchase")
+        const buyRecord = await creditPurchaseRepo.save({
+            user_id: id,
+            credit_package_id: creditPackage.id,
+            purchase_credits: creditPackage.credit_amount,
+            price_paid: creditPackage.price,
+        })
+
+
+
+        res.json({ status: "success", data: null });
+        return;
+    },
 };
 module.exports = creditPackageController;

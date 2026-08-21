@@ -197,6 +197,29 @@ const userController = {
             }
         });
         return;
+    },
+
+    // 查看購買課程方案紀錄
+    async getPurchaseRecords(req, res, next) {
+        const { id } = req.user;
+        const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
+        const purchaseRecords = await creditPurchaseRepo.find({
+            where: { user_id: id },
+            relations: { credit_package: true },
+            order: { createdAt: "DESC" },
+        });
+
+        const purchaseRecordList = purchaseRecords.map((record) => {
+            return {
+                name: record.credit_package.name,
+                purchased_credits: record.purchase_credits,
+                price_paid: record.price_paid,
+                purchase_at: record.createdAt,
+            };
+        });
+
+        res.json({ status: "success", data: purchaseRecordList });
+        return;
     }
 
 
