@@ -10,6 +10,11 @@ router.post('/courses', isAuth, isCoach, coachController.addCourse);
 router.get('/courses/:course_id', isAuth, coachController.getCoachCourse);
 router.put('/courses/:course_id', isAuth, isCoach, coachController.updateCoachCourse);
 
+router.get('/', coachController.getAllCoaches);
+
+
+
+
 router.post('/:userId', coachController.roleConvert);
 
 module.exports = router;

@@ -407,6 +407,51 @@ const coachController = {
                 updatedAt: course.updatedAt
             }
         });
+    },
+
+    // (公開)取得所有教練列表
+    async getAllCoaches(req, res, next) {
+        console.log('進來getAllcoaches了')
+        const { per, page } = req.query;
+
+        if (!per || !page) {
+            next(appError(400, '欄位未填寫正確'));
+            return;
+        }
+
+        const perNum = Number(per);
+        const pageNum = Number(page);
+
+        if (!isValidInteger(perNum) || !isValidInteger(pageNum)) {
+            next(appError(400, '欄位未填寫正確'));
+            return;
+        }
+
+        const skip = (pageNum - 1) * perNum;
+
+        const coachRepo = dataSource.getRepository("Coach");
+        const allCoaches = await coachRepo.find({
+            skip,
+            take: perNum,
+            relations: {
+                user: true
+            }
+        });
+
+        const coaches = allCoaches.map(coach => {
+            return {
+                id: coach.id,
+                user_id: coach.user_id,
+                name: coach.user.name
+            }
+        });
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                coaches
+            }
+        });
     }
 
 
