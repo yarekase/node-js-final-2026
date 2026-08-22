@@ -29,8 +29,8 @@ async function main() {
     ])
 
     const [ming, hua] = await userRepo.save([
-        { name: '阿明', email: 'ming@livefit.tw', password: '123', role: 'student' },
-        { name: '小花教練', email: 'coach.hua@livefit.tw', password: '456', role: 'coach' },
+        { name: '大熊', email: 'bear@livefit.tw', password: 'Bear3333', role: 'student' },
+        { name: '喇叭花教練', email: 'coach.bighua@livefit.tw', password: 'Acc1511456', role: 'coach' },
     ])
 
     const [package1, package2] = await packageRepo.save([

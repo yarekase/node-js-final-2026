@@ -1,7 +1,7 @@
 const { dataSource } = require("../db/data-source");
 const appError = require("../utils/appError");
 const { isValidString, isValidInteger } = require("../utils/validUtils");
-const { In, IsNull } = require("typeorm");
+const { In, IsNull, MoreThan, LessThan, Between } = require("typeorm");
 
 const coachController = {
     async roleConvert(req, res, next) {
@@ -450,6 +450,120 @@ const coachController = {
             status: 'success',
             data: coaches
         });
+    },
+
+    // 計算月營收
+    async getMonthRevenue(req, res, next) {
+        console.log('計算月營收開始')
+        const { month } = req.query;
+        const { id } = req.user;
+        const monthMap = {
+            january: 0,
+            february: 1,
+            march: 2,
+            april: 3,
+            may: 4,
+            june: 5,
+            july: 6,
+            august: 7,
+            september: 8,
+            october: 9,
+            november: 10,
+            december: 11
+        };
+        // 沒有month或非字串
+        if (!month || !isValidString(month)) {
+            next(appError(400, '欄位未填寫正確'));
+            return;
+        }
+        // month不是月份的英文小寫名字
+        const theMonth = monthMap[month];
+        if (theMonth === undefined) {
+            next(appError(400, '欄位未填寫正確'));
+            return;
+        }
+
+        const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
+        const courseBookingRepo = dataSource.getRepository("CourseBooking");
+
+        // 找到所有購買紀錄
+        const allPurchases = await creditPurchaseRepo.find(
+            {
+                relations: {
+                    credit_package: true
+                }
+            }
+        );
+        // 算出總購買堂數
+        const creditAmount = allPurchases.reduce((acc, curr) => acc + curr.credit_package.credit_amount, 0);
+        // 算出總花費
+        const priceAmount = allPurchases.reduce((acc, curr) => acc + curr.credit_package.price, 0);
+        // 算出單堂平均價格
+        const averagePrice = creditAmount > 0 ? priceAmount / creditAmount : 0;
+
+        // 定義今年
+        const currYear = new Date().getFullYear();
+        // 今年該月的第一天開始
+        const start = new Date(currYear, theMonth, 1);
+        // 今年下個月的第一天開始
+        const end = new Date(currYear, theMonth + 1, 1);
+
+        // 找到今年該月所有未取消的課程
+        const theMonthCourses = await courseBookingRepo.find({
+            where: {
+                createdAt: Between(start, end),
+                cancelledAt: IsNull()
+            },
+            relations: {
+                course: {
+                    coach: {
+                        user: true
+                    }
+                }
+            }
+        });
+
+        // 計算教練自己的未取消課程數量
+        const coachCoursesAmount = theMonthCourses.reduce((acc, curr) => {
+            if (curr.course.coach.user.id === id && !curr.cancelledAt) {
+                return acc + 1;
+            }
+            return acc;
+        }, 0);
+
+        console.log('你這個月的沒被取消的課程有:', coachCoursesAmount);
+
+        // 計算當月營收
+        const revenue = Math.floor(coachCoursesAmount * averagePrice);
+
+        // 計算這個月不重複的報名學生數量
+        const theMothStudents = new Set();
+        theMonthCourses.forEach(booking => {
+            if (booking.course.coach.user.id === id && !booking.cancelledAt) {
+                return theMothStudents.add(booking.user_id);
+            }
+        });
+        const participants = theMothStudents.size;
+        console.log('你這個月的 revenue有:', revenue);
+        console.log('你這個月不重複的報名學生數量有:', participants);
+
+
+        res.status(200).json({
+            status: "success",
+            data: {
+                total: {
+                    revenue,
+                    participants,
+                    course_count: coachCoursesAmount
+                }
+            }
+        });
+
+
+
+
+
+
     }
 
 
