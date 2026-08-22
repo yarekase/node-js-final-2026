@@ -32,7 +32,7 @@ const courseController = {
 
         // 檢查是否曾經預約過此課程
         const existingBooking = userBookings.some(booking =>
-            booking.course_id === courseId && booking.cancelledAt === null);
+            booking.course_id === courseId);
         if (existingBooking) {
             next(appError(400, '已經報名過此課程'));
             return;
@@ -77,6 +77,58 @@ const courseController = {
             data: null
         });
     },
+
+    async cancellBook(req, res, next) {
+        const { courseId } = req.params;
+        const { id } = req.user;
+
+        if (!isValidString(courseId)) {
+            next(appError(400, 'ID錯誤'));
+            return;
+        }
+
+        // 檢查有沒有這門課
+        const courseRepo = dataSource.getRepository('Course');
+        const course = await courseRepo.findOneBy({ id: courseId });
+        if (!course) {
+            next(appError(400, 'ID錯誤'));
+            return;
+        }
+
+        // 檢查使用者有沒有報名這門課
+        const courseBookingRepo = dataSource.getRepository('CourseBooking');
+        const courseBooking = await courseBookingRepo.findOneBy({
+            course_id: courseId,
+            user_id: id
+        });
+        if (!courseBooking) {
+            next(appError(400, 'ID錯誤'));
+            return;
+        }
+
+        // 檢查是否已經取消
+        if (courseBooking.cancelledAt) {
+            next(appError(400, 'ID錯誤'));
+            return;
+        }
+        try {
+            // 在cancellAt上打上現在時間，並update上去
+            courseBooking.cancelledAt = new Date();
+            await courseBookingRepo.save(courseBooking);
+
+            res.status(200).json({
+                status: "success",
+                data: null
+            });
+            return;
+        } catch (err) {
+            next(appError(400, '取消失敗'));
+            return;
+        }
+
+
+
+    }
 
 };
 module.exports = courseController;
