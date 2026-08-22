@@ -26,11 +26,14 @@ app.use((req, res, next) => {
 // 之後每完成一個里程碑，路由就多掛一條：
 // app.use('/api/credit-package', require('./routes/creditPackage'))
 
-app.use('/api', require('./routes/pob'))
+
 app.use('/api/coaches/skill', require('./routes/skill'))
 app.use('/api/credit-package', require('./routes/creditPackage'))
 app.use('/api/users', require('./routes/user'))
 app.use('/api/admin/coaches', require('./routes/coach'))
+app.use('/api/courses', require('./routes/course'))
+
+app.use('/api', require('./routes/pob'))
 
 
 

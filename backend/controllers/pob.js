@@ -166,8 +166,7 @@ const pobController = {
         });
 
         const courses = coursesNotEnd.map(course => {
-            console.log(course.startAt)
-            console.log(course.endAt)
+
             return {
                 id: course.id,
                 name: course.name,

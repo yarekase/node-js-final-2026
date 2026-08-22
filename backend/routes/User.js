@@ -11,5 +11,7 @@ router.put('/profile', isAuth, userController.changeName);
 router.put('/password', isAuth, userController.changePassword);
 
 router.get('/credit-package', isAuth, userController.getPurchaseRecords);
+// 查看自己購買的方案紀錄
+router.get('/courses', isAuth, userController.getUserCourseCredits);
 
 module.exports = router;

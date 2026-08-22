@@ -220,7 +220,63 @@ const userController = {
 
         res.json({ status: "success", data: purchaseRecordList });
         return;
+    },
+
+    // 取得本人的課表與剩餘堂數
+    async getUserCourseCredits(req, res, next) {
+        console.log('進入getUserCourseCredits');
+        const { id } = req.user;
+
+        const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
+        const purchaseRecords = await creditPurchaseRepo.find({
+            where: { user_id: id },
+            relations: { credit_package: true },
+            order: { createdAt: "DESC" },
+        });
+
+        const courseBookingRepo = dataSource.getRepository("CourseBooking");
+        const userBookings = await courseBookingRepo.find({
+            where: { user_id: id },
+            relations: {
+                course: {
+                    coach: { user: true },
+                }
+            },
+            order: { createdAt: "DESC" },
+        });
+
+        // 總購買堂數
+        const credit_amount = purchaseRecords.reduce((acc, curr) => acc + Number(curr.purchase_credits || 0), 0);
+        //總使用堂數
+        const credit_usage = userBookings.reduce((acc, curr) => curr.cancelledAt === null ? acc + 1 : acc, 0);
+        console.log('總購買堂數: ', credit_amount);
+        console.log('總使用堂數: ', credit_usage);
+        //剩餘堂數
+        const credit_remain = credit_amount - credit_usage;
+        console.log('剩餘堂數: ', credit_remain);
+        // 報名記錄陣列
+        const course_booking = userBookings.map((booking) => {
+            return {
+                course_id: booking.course_id,
+                name: booking.course.name,
+                start_at: booking.course.startAt,
+                end_at: booking.course.endAt,
+                meeting_url: booking.course.meeting_url,
+                coach_name: booking.course.coach.user.name,
+                cancelled_at: booking.cancelledAt || null,
+            }
+        })
+        res.json({
+            status: "success",
+            data: {
+                credit_remain,
+                credit_usage,
+                course_booking,
+            }
+        })
+        return;
     }
+
 
 
 
