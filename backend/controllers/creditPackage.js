@@ -45,7 +45,7 @@ const creditPackageController = {
         const { id } = req.user;
         const { creditPackageId } = req.params;
         if (!isValidString(creditPackageId)) {
-            next(appError(400, "欄位未填寫正確"));
+            next(appError(400, "ID錯誤"));
             return;
         }
         const creditPackageRepo = dataSource.getRepository("CreditPackage");

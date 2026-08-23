@@ -24,10 +24,6 @@ module.exports = new EntitySchema({
             createDate: true,
             nullable: false,
         },
-        credit_used: {
-            type: 'int',
-            nullable: false,
-        },
         cancelledAt: {
             name: 'cancelled_at',
             type: 'timestamp',

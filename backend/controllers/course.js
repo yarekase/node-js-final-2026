@@ -3,6 +3,7 @@ const appError = require("../utils/appError");
 const { isValidString } = require("../utils/validUtils");
 
 const courseController = {
+    // 預定課程
     async bookCourse(req, res, next) {
 
         const { courseId } = req.params;
@@ -78,6 +79,7 @@ const courseController = {
         });
     },
 
+    // 取消預訂課程
     async cancellBook(req, res, next) {
         const { courseId } = req.params;
         const { id } = req.user;

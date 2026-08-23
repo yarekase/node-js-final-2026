@@ -27,11 +27,13 @@ module.exports = new EntitySchema({
             type: "many-to-one",
             target: "Coach",
             joinColumn: { name: "coach_id" },
+            onDelete: "CASCADE"
         },
         skill: {
             type: "many-to-one",
             target: "Skill",
             joinColumn: { name: "skill_id" },
+            onDelete: "CASCADE"
         }
     },
 });

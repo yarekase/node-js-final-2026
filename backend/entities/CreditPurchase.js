@@ -18,14 +18,6 @@ module.exports = new EntitySchema({
             type: "uuid",
             nullable: false
         },
-        purchase_credits: {
-            type: "int",
-            nullable: false
-        },
-        price_paid: {
-            type: "int",
-            nullable: false,
-        },
         createdAt: {
             name: 'created_at',
             type: "timestamp",

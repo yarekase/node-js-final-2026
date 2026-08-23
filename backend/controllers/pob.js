@@ -99,8 +99,8 @@ const pobController = {
                     experience_years: coach.experience_years,
                     description: coach.description,
                     profile_image_url: coach.profile_image_url || '',
-                    created_at: coach.created_at,
-                    updated_at: coach.updated_at,
+                    created_at: coach.createdAt,
+                    updated_at: coach.updatedAt,
                     skills
                 }
             }

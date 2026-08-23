@@ -212,8 +212,8 @@ const userController = {
         const purchaseRecordList = purchaseRecords.map((record) => {
             return {
                 name: record.credit_package.name,
-                purchased_credits: record.purchase_credits,
-                price_paid: record.price_paid,
+                purchased_credits: record.credit_package.credit_amount,
+                price_paid: record.credit_package.price,
                 purchase_at: record.createdAt,
             };
         });
@@ -246,7 +246,8 @@ const userController = {
         });
 
         // 總購買堂數
-        const credit_amount = purchaseRecords.reduce((acc, curr) => acc + Number(curr.purchase_credits || 0), 0);
+        const credit_amount = purchaseRecords.reduce((acc, curr) => acc + Number(curr.credit_package.credit_amount || 0), 0);
+
         //總使用堂數
         const credit_usage = userBookings.reduce((acc, curr) => curr.cancelledAt === null ? acc + 1 : acc, 0);
         console.log('總購買堂數: ', credit_amount);
