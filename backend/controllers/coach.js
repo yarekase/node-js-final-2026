@@ -484,30 +484,14 @@ const coachController = {
 
         const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
         const courseBookingRepo = dataSource.getRepository("CourseBooking");
+        const creditPackageRepo = dataSource.getRepository("CreditPackage");
 
         // 找到所有方案
-        const allCreditPackages = await creditPurchaseRepo.find();
+        const allCreditPackages = await creditPackageRepo.find();
+        const packageCreditAmount = allCreditPackages.reduce((acc, curr) => acc + curr.credit_amount, 0);
+        const packagePrice = allCreditPackages.reduce((acc, curr) => acc + curr.price, 0);
+        const pricePerCredit = packageCreditAmount > 0 ? packagePrice / packageCreditAmount : 0;
 
-
-        // 找到所有購買紀錄
-        const allPurchases = await creditPurchaseRepo.find(
-            {
-                relations: {
-                    credit_package: true
-                }
-            }
-        );
-        console.log('所有購買堂數', allPurchases.map(purchase => purchase.credit_package.credit_amount));
-        console.log('所有購買金額', allPurchases.map(purchase => purchase.credit_package.price));
-        // 算出總購買堂數
-        const creditAmount = allPurchases.reduce((acc, curr) => acc + curr.credit_package.credit_amount, 0);
-        console.log('總購買堂數', creditAmount);
-        // 算出總花費
-        const priceAmount = allPurchases.reduce((acc, curr) => acc + curr.credit_package.price, 0);
-        console.log('總花費', priceAmount);
-        // 算出單堂平均價格
-        const averagePrice = creditAmount > 0 ? priceAmount / creditAmount : 0;
-        console.log('單堂平均價格', averagePrice);
         // 定義今年
         const currYear = new Date().getFullYear();
         // 今年該月的第一天開始
@@ -540,10 +524,8 @@ const coachController = {
             return acc;
         }, 0);
 
-        console.log('你這個月的沒被取消的課程數量有:', coachCoursesAmount);
-
         // 計算當月營收
-        const revenue = Math.floor(coachCoursesAmount * averagePrice);
+        const revenue = Math.floor(coachCoursesAmount * pricePerCredit);
 
         // 計算這個月不重複的報名學生數量
         const theMothStudents = new Set();
@@ -552,10 +534,7 @@ const coachController = {
                 return theMothStudents.add(booking.user_id);
             }
         });
-        console.log('你這個月的課程學生有:', theMothStudents);
         const participants = theMothStudents.size;
-        console.log('你這個月的 revenue有:', revenue);
-        console.log('你這個月不重複的報名學生數量有:', participants);
 
 
         res.status(200).json({
