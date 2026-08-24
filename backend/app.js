@@ -32,6 +32,7 @@ app.use('/api/credit-package', require('./routes/creditPackage'))
 app.use('/api/users', require('./routes/user'))
 app.use('/api/admin/coaches', require('./routes/coach'))
 app.use('/api/courses', require('./routes/course'))
+app.use('/api/upload', require('./routes/upload'))
 
 app.use('/api', require('./routes/pob'))
 
