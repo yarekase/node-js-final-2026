@@ -57,13 +57,13 @@ app.use((err, req, res, next) => {
     })
 })
 
-dataSource.initialize().then(() => {
-    app.listen(get('web.port'), () => {
-        console.log(`Server running on port ${get('web.port')}`)
-    })
-}).catch((err) => {
-    console.error('資料庫連線失敗', err)
-    process.exit(1)
-})
+// dataSource.initialize().then(() => {
+//     app.listen(get('web.port'), () => {
+//         console.log(`Server running on port ${get('web.port')}`)
+//     })
+// }).catch((err) => {
+//     console.error('資料庫連線失敗', err)
+//     process.exit(1)
+// })
 
 module.exports = app
